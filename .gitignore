@@ -33,3 +33,4 @@ build/
 .vscode/
 .idea/
 /quick-start/output.mp3
+application-local.yml
