@@ -20,4 +20,8 @@ public final class Model {
         public static final String DEEPSEEK_REASONER = "deepseek-reasoner";
     }
 
+    public static final class Ollama {
+        public static final String QWEN_3_0_6B = "qwen3:0.6b";
+        public static final String QWEN_3_14B = "qwen3:14b";
+    }
 }
