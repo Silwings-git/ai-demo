@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: quick-start
-  profiles:
-    active: local

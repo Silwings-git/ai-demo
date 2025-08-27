@@ -1,4 +1,4 @@
-package cn.silwings.springai.quickstart.config;
+package cn.silwings.springai.quickstart;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
