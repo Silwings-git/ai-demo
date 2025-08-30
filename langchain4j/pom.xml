@@ -12,6 +12,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>quick-start-langchain4j</module>
+        <module>spring-boot-integration</module>
+        <module>chat-demo</module>
     </modules>
 
     <artifactId>langchain4j</artifactId>

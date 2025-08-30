@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能AI聊天助手</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- 配置Tailwind自定义主题 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 主色调：靛蓝色，传达科技感和可靠性
+                        secondary: '#10B981', // 辅助色：绿色，用于成功状态和发送按钮
+                        neutral: {
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                        'hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                },
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .bg-gradient {
+                background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-neutral-100 text-neutral-800 min-h-screen flex flex-col overflow-hidden">
+<!-- 顶部导航栏 -->
+<header class="bg-white shadow-md z-30 transition-all duration-300">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <div class="bg-gradient text-white p-2 rounded-lg">
+                <i class="fa fa-comments text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-neutral-800">智能AI聊天助手</h1>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-neutral-200 transition-colors">
+                <i class="fa fa-moon-o text-neutral-600"></i>
+            </button>
+            <button id="settings-btn" class="p-2 rounded-full hover:bg-neutral-200 transition-colors">
+                <i class="fa fa-cog text-neutral-600"></i>
+            </button>
+            <div class="relative">
+                <img src="https://picsum.photos/id/64/40/40" alt="用户头像" class="w-8 h-8 rounded-full border-2 border-primary cursor-pointer hover:opacity-90 transition-opacity">
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 主内容区 -->
+<main class="flex flex-1 overflow-hidden">
+    <!-- 侧边栏 - 模型选择 -->
+    <aside id="sidebar" class="w-64 bg-white shadow-lg z-20 transition-all duration-300 transform lg:translate-x-0" :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+        <div class="p-4 border-b border-neutral-200">
+            <h2 class="font-semibold text-lg text-neutral-800">选择AI模型</h2>
+            <p class="text-sm text-neutral-500">选择你想要对话的AI模型</p>
+        </div>
+
+        <div class="p-2">
+            <ul id="model-list" class="space-y-1">
+                <!-- 模型选项将通过JavaScript动态生成 -->
+            </ul>
+        </div>
+
+        <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-neutral-200 bg-white">
+            <button id="new-chat-btn" class="w-full flex items-center justify-center space-x-2 bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-all shadow-md hover:shadow-lg">
+                <i class="fa fa-plus-circle"></i>
+                <span>新对话</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- 聊天区域 -->
+    <section class="flex-1 flex flex-col overflow-hidden">
+        <!-- 移动端侧边栏切换按钮 -->
+        <div class="lg:hidden p-4 bg-white border-b border-neutral-200">
+            <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-neutral-200 transition-colors">
+                <i class="fa fa-bars text-neutral-600"></i>
+            </button>
+        </div>
+
+        <!-- 聊天消息容器 -->
+        <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-hide bg-gradient-to-b from-neutral-50 to-neutral-100">
+            <!-- 欢迎消息 -->
+            <div class="flex items-start space-x-3 animate-fade-in">
+                <div class="bg-primary/10 p-2 rounded-full">
+                    <i class="fa fa-robot text-primary"></i>
+                </div>
+                <div class="bg-white rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm">
+                    <p class="text-neutral-700">您好！我是您的AI聊天助手。请选择一个模型开始对话吧。</p>
+                    <p class="text-neutral-500 text-sm mt-2">支持多种AI模型，您可以随时切换使用。</p>
+                </div>
+            </div>
+
+            <!-- 消息将通过JavaScript动态添加 -->
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="p-4 bg-white border-t border-neutral-200">
+            <div class="relative max-w-4xl mx-auto">
+                <form id="chat-form" class="relative">
+                        <textarea
+                                id="message-input"
+                                placeholder="输入您的消息..."
+                                class="w-full p-4 pr-12 pl-4 rounded-2xl border border-neutral-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none resize-none transition-all shadow-sm min-h-[100px]"
+                        ></textarea>
+                    <div class="absolute right-3 bottom-3 flex space-x-2">
+                        <button type="button" class="p-2 text-neutral-500 hover:text-primary hover:bg-primary/10 rounded-full transition-colors">
+                            <i class="fa fa-paperclip"></i>
+                        </button>
+                        <button
+                                type="submit"
+                                id="send-btn"
+                                class="bg-secondary hover:bg-secondary/90 text-white p-2 rounded-full transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled
+                        >
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+                <p class="text-xs text-neutral-400 mt-2 text-center">
+                    支持Markdown格式 | 按Shift+Enter换行
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- 加载中模态框 -->
+<div id="loading-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center">
+        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 text-neutral-700 font-medium">AI正在思考中...</p>
+    </div>
+</div>
+
+<!-- 脚本 -->
+<script>
+    // 示例模型数据
+    const models = [
+        { id: 'gpt-3.5', name: 'GPT-3.5', description: '快速、高效的通用模型', icon: 'fa-bolt' },
+        { id: 'gpt-4', name: 'GPT-4', description: '更强大的AI模型，支持复杂任务', icon: 'fa-rocket' },
+        { id: 'claude', name: 'Claude', description: '擅长处理长文本的AI助手', icon: 'fa-file-text-o' },
+        { id: 'gemini', name: 'Gemini', description: '谷歌的多模态AI模型', icon: 'fa-star' },
+        { id: 'llama', name: 'LLaMA', description: '开源大语言模型', icon: 'fa-code-fork' }
+    ];
+
+    // 当前选中的模型
+    let selectedModel = null;
+    // 消息列表
+    let messages = [];
+
+    // DOM元素
+    const modelList = document.getElementById('model-list');
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const chatContainer = document.getElementById('chat-container');
+    const sendBtn = document.getElementById('send-btn');
+    const loadingModal = document.getElementById('loading-modal');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const themeToggle = document.getElementById('theme-toggle');
+
+    // 初始化模型列表
+    function initModels() {
+        models.forEach(model => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                    <button
+                        class="model-btn w-full flex items-center p-3 rounded-lg hover:bg-neutral-100 transition-all text-left"
+                        data-model-id="${model.id}"
+                    >
+                        <div class="bg-primary/10 p-2 rounded-lg mr-3">
+                            <i class="fa ${model.icon} text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-neutral-800">${model.name}</div>
+                            <div class="text-xs text-neutral-500">${model.description}</div>
+                        </div>
+                    </button>
+                `;
+            modelList.appendChild(li);
+        });
+
+        // 添加模型选择事件
+        document.querySelectorAll('.model-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectModel(btn.dataset.modelId);
+
+                // 在移动设备上选择模型后自动隐藏侧边栏
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        });
+    }
+
+    // 选择模型
+    function selectModel(modelId) {
+        // 更新选中状态
+        document.querySelectorAll('.model-btn').forEach(btn => {
+            if (btn.dataset.modelId === modelId) {
+                btn.classList.add('bg-primary/5', 'border-l-4', 'border-primary');
+                selectedModel = models.find(m => m.id === modelId);
+            } else {
+                btn.classList.remove('bg-primary/5', 'border-l-4', 'border-primary');
+            }
+        });
+
+        // 启用发送按钮
+        sendBtn.disabled = false;
+
+        // 显示模型切换消息
+        addSystemMessage(`已切换至 ${selectedModel.name} 模型，您可以开始对话了。`);
+    }
+
+    // 添加系统消息
+    function addSystemMessage(text) {
+        const message = {
+            id: Date.now(),
+            type: 'system',
+            content: text
+        };
+
+        messages.push(message);
+        renderMessage(message);
+        scrollToBottom();
+    }
+
+    // 添加用户消息
+    function addUserMessage(text) {
+        const message = {
+            id: Date.now(),
+            type: 'user',
+            content: text,
+            model: selectedModel.id
+        };
+
+        messages.push(message);
+        renderMessage(message);
+        scrollToBottom();
+
+        return message;
+    }
+
+    // 添加AI消息
+    function addAIMessage(text, modelId) {
+        const message = {
+            id: Date.now(),
+            type: 'ai',
+            content: text,
+            model: modelId
+        };
+
+        messages.push(message);
+        renderMessage(message);
+        scrollToBottom();
+
+        return message;
+    }
+
+    // 渲染消息
+    function renderMessage(message) {
+        const div = document.createElement('div');
+        div.className = 'flex items-start space-x-3 animate-fade-in';
+        div.dataset.messageId = message.id;
+
+        let avatar, messageBubble;
+
+        switch (message.type) {
+            case 'user':
+                div.classList.add('justify-end');
+                avatar = `
+                        <div class="order-2">
+                            <img src="https://picsum.photos/id/64/40/40" alt="用户头像" class="w-8 h-8 rounded-full">
+                        </div>
+                    `;
+                messageBubble = `
+                        <div class="order-1 bg-primary text-white rounded-2xl rounded-tr-none p-4 max-w-[85%] shadow-sm">
+                            <p>${formatMessage(message.content)}</p>
+                        </div>
+                    `;
+                break;
+
+            case 'ai':
+                const model = models.find(m => m.id === message.model);
+                avatar = `
+                        <div class="bg-primary/10 p-2 rounded-full">
+                            <i class="fa ${model?.icon || 'fa-robot'} text-primary"></i>
+                        </div>
+                    `;
+                messageBubble = `
+                        <div class="bg-white rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm">
+                            <p>${formatMessage(message.content)}</p>
+                            <div class="mt-2 flex items-center space-x-3">
+                                <span class="text-xs text-neutral-500">${model?.name || 'AI模型'}</span>
+                                <div class="flex space-x-1">
+                                    <button class="text-xs text-neutral-400 hover:text-primary p-1" title="复制">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                    <button class="text-xs text-neutral-400 hover:text-primary p-1" title=" thumbs up">
+                                        <i class="fa fa-thumbs-up"></i>
+                                    </button>
+                                    <button class="text-xs text-neutral-400 hover:text-primary p-1" title="thumbs down">
+                                        <i class="fa fa-thumbs-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                break;
+
+            case 'system':
+                avatar = `
+                        <div class="bg-neutral-200 p-2 rounded-full">
+                            <i class="fa fa-info text-neutral-600"></i>
+                        </div>
+                    `;
+                messageBubble = `
+                        <div class="bg-neutral-100 rounded-2xl p-4 max-w-[85%] shadow-sm">
+                            <p class="text-neutral-600">${formatMessage(message.content)}</p>
+                        </div>
+                    `;
+                break;
+        }
+
+        div.innerHTML = avatar + messageBubble;
+        chatContainer.appendChild(div);
+
+        // 添加复制功能
+        const copyBtn = div.querySelector('.fa-copy').parentElement;
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(message.content);
+                copyBtn.innerHTML = '<i class="fa fa-check"></i>';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fa fa-copy"></i>';
+                }, 2000);
+            });
+        }
+    }
+
+    // 格式化消息内容（简单处理换行）
+    function formatMessage(content) {
+        return content
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    }
+
+    // 滚动到底部
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // 发送消息
+    async function sendMessage() {
+        const content = messageInput.value.trim();
+        if (!content || !selectedModel) return;
+
+        // 清空输入框
+        messageInput.value = '';
+        sendBtn.disabled = true;
+
+        // 添加用户消息
+        const userMessage = addUserMessage(content);
+
+        // 显示加载状态
+        loadingModal.classList.remove('hidden');
+
+        try {
+            // 调用API获取AI回复
+            const aiResponse = await getAIResponse(content, selectedModel.id);
+
+            // 添加AI消息
+            addAIMessage(aiResponse, selectedModel.id);
+        } catch (error) {
+            addSystemMessage(`出错了：${error.message}，请重试。`);
+            console.error('Error:', error);
+        } finally {
+            // 隐藏加载状态
+            loadingModal.classList.add('hidden');
+            sendBtn.disabled = false;
+        }
+    }
+
+    // 模拟API调用（实际项目中替换为真实API）
+    async function getAIResponse(message, modelId) {
+        // 实际项目中，这里应该调用真实的后端API
+        // 示例：return await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ message, modelId }) }).then(res => res.json());
+
+        // 模拟网络延迟
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // 模拟不同模型的回复
+        const responses = {
+            'gpt-3.5': `感谢您的消息！这是GPT-3.5的回复："${message}"。我可以帮助您解答问题、生成内容或进行对话。`,
+            'gpt-4': `这是GPT-4的回复，针对您的问题："${message}"。我具备更强大的理解和推理能力，可以处理更复杂的任务。`,
+            'claude': `Claude收到了您的消息："${message}"。我擅长处理长文本，可以帮助您总结、分析文档内容。`,
+            'gemini': `Gemini回应您的消息："${message}"。作为多模态模型，我可以理解文本、图像等多种信息形式。`,
+            'llama': `LLaMA开源模型回复："${message}"。我是一个开源的大语言模型，可以用于各种自然语言处理任务。`
+        };
+
+        return responses[modelId] || `AI模型回复：${message}`;
+    }
+
+    // 初始化事件监听
+    function initEventListeners() {
+        // 表单提交
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        // 输入框变化时启用/禁用发送按钮
+        messageInput.addEventListener('input', () => {
+            sendBtn.disabled = !messageInput.value.trim() || !selectedModel;
+        });
+
+        // 支持Shift+Enter换行
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 移动端侧边栏切换
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        }
+
+        // 新对话按钮
+        newChatBtn.addEventListener('click', () => {
+            // 清空消息
+            messages = [];
+            chatContainer.innerHTML = '';
+            addSystemMessage('已开始新对话，请选择一个模型开始聊天。');
+
+            // 在移动设备上隐藏侧边栏
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+
+        // 主题切换
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = themeToggle.querySelector('i');
+            if (icon.classList.contains('fa-moon-o')) {
+                icon.classList.replace('fa-moon-o', 'fa-sun-o');
+            } else {
+                icon.classList.replace('fa-sun-o', 'fa-moon-o');
+            }
+        });
+    }
+
+    // 初始化应用
+    function initApp() {
+        initModels();
+        initEventListeners();
+    }
+
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initApp);
+</script>
+</body>
+</html>
