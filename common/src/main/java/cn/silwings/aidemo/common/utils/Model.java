@@ -5,6 +5,8 @@ public final class Model {
     public static final class QWEN {
         // 通义千问-Max
         public static final String QWEN_MAX = "qwen-max";
+        // 通亿千问 turbo
+        public static final String QWEN_TURBO = "qwen-turbo";
         // 通义千问VL-Plus
         public static final String QWEN_VL_PLUS = "qwen-vl-plus";
         // 通义万相2.1-文生图-Turbo
@@ -18,6 +20,7 @@ public final class Model {
         public static final String DEEPSEEK_CHAT = "deepseek-chat";
         // 思考模型
         public static final String DEEPSEEK_REASONER = "deepseek-reasoner";
+        public static final String DEEP_SEEK_V_3_1 = "deepseek-v3.1";
     }
 
     public static final class Ollama {
