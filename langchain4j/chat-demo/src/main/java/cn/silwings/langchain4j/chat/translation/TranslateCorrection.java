@@ -1,5 +1,7 @@
 package cn.silwings.langchain4j.chat.translation;
 
+import dev.langchain4j.agent.tool.P;
+import dev.langchain4j.agent.tool.Tool;
 import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
@@ -45,15 +47,7 @@ public interface TranslateCorrection extends ChatMemoryAccess {
             - 格式保持优先于表达优化
             
             ## 输出要求
-            请输出严格的JSON格式，包含以下字段：
-            
-            {
-              "score": 85,
-              "suggestion": "具体的改进建议，包括技术准确性、语境适配性、表达规范性方面的问题和改进方案"
-            }
-            
-            - score: 整体评分（0-100分）
-            - suggestion: 具体的改进建议，要详细说明问题点和修改方案""")
+            每次回答前必须使用`extractJudgingJson`函数提取合法回答结构,之后将提取到的结果直接用于回答""")
     @UserMessage("""
             请评估以下翻译结果：
             
@@ -61,4 +55,13 @@ public interface TranslateCorrection extends ChatMemoryAccess {
             
             输出标准化的JSON评估结果。""")
     Result<JudgingResults> judging(@MemoryId int memoryId, @V("original") String original, @V("translation") String translation);
+
+    class Tools {
+        @Tool("基于分数和评审建议返回合适的json数据")
+        public JudgingResults extractJudgingJson(@P("分数") int score, @P("评审建议") String suggestion) {
+            System.out.println("开始组装分数和评审意见");
+            return new JudgingResults().setScore(score).setSuggestion(suggestion);
+        }
+    }
+
 }

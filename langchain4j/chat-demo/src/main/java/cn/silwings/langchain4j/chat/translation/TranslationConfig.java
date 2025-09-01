@@ -28,7 +28,7 @@ public class TranslationConfig {
     @Bean
     public OpenAiChatModel deepseekV3() {
         return OpenAiChatModel.builder()
-                .modelName(Model.DeepSeek.DEEP_SEEK_V_3_1)
+                .modelName(Model.DeepSeek.DEEP_SEEK_V_3)
                 .baseUrl("https://dashscope.aliyuncs.com/compatible-mode/v1")
                 .apiKey(Env.ALI_AI_KEY.get())
                 .logRequests(true)
@@ -56,6 +56,7 @@ public class TranslationConfig {
                 .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
                 .chatModel(deepseekV3)
                 .chatMemoryProvider(chatMemoryProvider)
+                .tools(new TranslateCorrection.Tools())
                 .build();
     }
 }

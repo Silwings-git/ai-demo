@@ -21,6 +21,7 @@ public final class Model {
         // 思考模型
         public static final String DEEPSEEK_REASONER = "deepseek-reasoner";
         public static final String DEEP_SEEK_V_3_1 = "deepseek-v3.1";
+        public static final String DEEP_SEEK_V_3 = "deepseek-v3";
     }
 
     public static final class Ollama {
