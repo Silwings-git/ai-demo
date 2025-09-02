@@ -1,4 +1,4 @@
-package cn.silwings.langchain4j.quickstart.std13_spring_boot_integration;
+package cn.silwings.langchain4j.quickstart.std13_spring_boot_integration.springboot;
 
 import dev.langchain4j.model.chat.ChatModel;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +14,6 @@ public class ChatController {
 
     @GetMapping("/chat")
     public String model(@RequestParam(value = "message", defaultValue = "Hello") String message) {
-        return chatModel.chat(message);
+        return this.chatModel.chat(message);
     }
 }

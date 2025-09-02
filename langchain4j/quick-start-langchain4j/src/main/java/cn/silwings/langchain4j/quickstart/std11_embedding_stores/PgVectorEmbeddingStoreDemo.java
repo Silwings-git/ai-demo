@@ -27,7 +27,7 @@ public class PgVectorEmbeddingStoreDemo {
                 .host("localhost")
                 .port(5432)
                 .database("postgres")
-                .user("postgres")
+                .user("silwings")
                 .password("root")
                 .table("test")
                 .dimension(embeddingModel.dimension())

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 class MyConfiguration {
-    
+
     @Bean
     ChatModelListener chatModelListener() {
         return new ChatModelListener() {
@@ -33,5 +33,10 @@ class MyConfiguration {
                 log.info("onError(): {}", errorContext.error().getMessage());
             }
         };
+    }
+
+    @Bean
+    ChatModelListener observability() {
+        return new Observability();
     }
 }
