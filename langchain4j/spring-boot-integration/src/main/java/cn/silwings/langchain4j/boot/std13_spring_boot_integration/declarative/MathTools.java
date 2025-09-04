@@ -1,4 +1,4 @@
-package cn.silwings.langchain4j.quickstart.std13_spring_boot_integration.declarative;
+package cn.silwings.langchain4j.boot.std13_spring_boot_integration.declarative;
 
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;

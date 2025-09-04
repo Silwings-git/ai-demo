@@ -1,4 +1,4 @@
-package cn.silwings.langchain4j.quickstart.std13_spring_boot_integration.declarative;
+package cn.silwings.langchain4j.boot.std13_spring_boot_integration.declarative;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

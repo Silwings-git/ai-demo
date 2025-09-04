@@ -1,4 +1,4 @@
-package cn.silwings.langchain4j.quickstart.std13_spring_boot_integration.springboot;
+package cn.silwings.langchain4j.boot.std13_spring_boot_integration.springboot;
 
 import dev.langchain4j.model.chat.ChatModel;
 import lombok.RequiredArgsConstructor;
