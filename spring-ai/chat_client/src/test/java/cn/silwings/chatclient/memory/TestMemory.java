@@ -90,31 +90,4 @@ public class TestMemory {
         System.out.println("response2 = " + response2);
         System.out.println("--------------------------------------------");
     }
-
-    @Test
-    public void testMemoryJDBC(){
-        final String content = this.chatClient.prompt()
-                .user("My name is Silwings")
-                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, "1"))
-                .call()
-                .content();
-        System.out.println("content = " + content);
-        System.out.println("--------------------------------------------");
-
-        final String response1 = this.chatClient.prompt()
-                .user("What is my name?")
-                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, "1"))
-                .call()
-                .content();
-        System.out.println("response1 = " + response1);
-        System.out.println("--------------------------------------------");
-
-        final String response2 = this.chatClient.prompt()
-                .user("What is my name?")
-                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, "2"))
-                .call()
-                .content();
-        System.out.println("response2 = " + response2);
-        System.out.println("--------------------------------------------");
-    }
 }
