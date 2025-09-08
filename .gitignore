@@ -34,3 +34,4 @@ build/
 .idea/
 /quick-start/output.mp3
 application-local.yml
+chat-memory.db
