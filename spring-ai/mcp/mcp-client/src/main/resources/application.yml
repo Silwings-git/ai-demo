@@ -1,0 +1,27 @@
+spring:
+  ai:
+    dashscope:
+      api-key: ${ALI_AI_KEY}
+    mcp:
+      client:
+        request-timeout: 60000
+        stdio:
+          # 将mcp配置信息单独放在一个json文件中
+          servers-configuration: classpath:/mcp/mcp-servers-config.json
+          # 直接配置在配置文件中
+
+#          connections:
+#            baidu-map:
+#              command: npx
+#              args:
+#                - -y
+#                - @baidumap/mcp-server-baidu-map
+#              env:
+#                BAIDU_MAP_API_KEY: xxx
+
+logging:
+  level:
+    org.springframework.ai: debug
+    io.modelcontextprotocol:
+      client: debug
+      spec: debug

@@ -3,6 +3,7 @@ package cn.silwings.mpam;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
@@ -21,7 +22,7 @@ public class MorePlatformAndModelController {
         models.forEach((s, model) -> this.models.put(s.replace("ChatModel", "").toLowerCase(), model));
     }
 
-    @RequestMapping("/chat")
+    @RequestMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chat(final String message, final MorePlatformAndModelOptions options) {
 
         final ChatModel chatModel = this.getChatModel(options.getPlatform()).orElseThrow();

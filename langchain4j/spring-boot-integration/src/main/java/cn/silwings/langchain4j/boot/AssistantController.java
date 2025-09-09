@@ -1,6 +1,7 @@
 package cn.silwings.langchain4j.boot;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,7 +32,7 @@ public class AssistantController {
         };
     }
 
-    @GetMapping(value = "/chat-stream")
+    @GetMapping(value = "/chat-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chatStream(@RequestParam("message") String message) {
         return this.ollamaStreamingAssistant.chat(message);
     }
