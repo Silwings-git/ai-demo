@@ -1,14 +1,13 @@
 {
   "mcpServers": {
-    "baidu-map": {
-      "command": "npx",
+    "stdio-mcp-server-weather": {
+      "command": "java",
       "args": [
-        "-y",
-        "@baidumap/mcp-server-baidu-map"
-      ],
-      "env": {
-        "BAIDU_MAP_API_KEY": "TyLgqMW773wweBho94SApviU8OvTTQ6y"
-      }
+        "-Dspring.ai.mcp.server.stdio=true",
+        "-Dlogging.pattern.console=",
+        "-jar",
+        "spring-ai/mcp/stdio-mcp-server/target/stdio-mcp-server-0.0.1-SNAPSHOT.jar"
+      ]
     }
   }
 }

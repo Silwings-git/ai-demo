@@ -19,6 +19,7 @@ public class ChatController {
 
     public ChatController(final DashScopeChatModel model,
                           final ChatMemory chatMemory,
+                          // mcp server
                           final ToolCallbackProvider toolCallbackProvider) {
         this.chatClient = ChatClient.builder(model)
                 .defaultAdvisors(new SimpleLoggerAdvisor(), PromptChatMemoryAdvisor.builder(chatMemory).build())
