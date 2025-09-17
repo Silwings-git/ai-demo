@@ -19,6 +19,7 @@
         <module>chat_client</module>
         <module>mcp</module>
         <module>reference</module>
+        <module>rag</module>
     </modules>
 
     <properties>
