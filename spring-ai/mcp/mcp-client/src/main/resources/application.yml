@@ -2,15 +2,20 @@ spring:
   ai:
     dashscope:
       api-key: ${ALI_AI_KEY}
+      chat:
+        options:
+          model: qwen-plus
     mcp:
       client:
         request-timeout: 60000
         stdio:
           # 将mcp配置信息单独放在一个json文件中
           servers-configuration: classpath:/mcp/mcp-servers-config.json
-          # 直接配置在配置文件中
-
-#          connections:
+        sse:
+          connections:
+            sse-mcp-server:
+              url: http://localhost:8088
+        # 直接配置在配置文件中
 #            baidu-map:
 #              command: npx
 #              args:

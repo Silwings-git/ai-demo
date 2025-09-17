@@ -1,0 +1,11 @@
+spring:
+  main:
+    bannerMode: off
+  ai:
+    mcp:
+      server:
+        name: sse-demo-server
+        version: 0.0.1
+server:
+  port: 8088
+
