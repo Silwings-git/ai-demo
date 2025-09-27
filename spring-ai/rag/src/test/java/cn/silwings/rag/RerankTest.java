@@ -1,122 +1,62 @@
 package cn.silwings.rag;
 
+import com.alibaba.cloud.ai.advisor.RetrievalRerankAdvisor;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
-import com.alibaba.cloud.ai.dashscope.embedding.DashScopeEmbeddingModel;
+import com.alibaba.cloud.ai.dashscope.rerank.DashScopeRerankModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
-import org.springframework.ai.rag.generation.augmentation.ContextualQueryAugmenter;
-import org.springframework.ai.rag.preretrieval.query.transformation.RewriteQueryTransformer;
-import org.springframework.ai.rag.preretrieval.query.transformation.TranslationQueryTransformer;
-import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.context.annotation.Bean;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
-public class ChatClientRagTest {
+public class RerankTest {
 
-    @Autowired
-    private DefaultErrorAttributes defaultErrorAttributes;
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        public VectorStore vectorStore(final OllamaEmbeddingModel embeddingModel) {
+            return SimpleVectorStore.builder(embeddingModel).build();
+        }
+    }
 
     @BeforeEach
     public void init(@Autowired VectorStore vectorStore) {
         vectorStore.add(this.getDocuments());
     }
 
-    @TestConfiguration
-    public static class TestConfig {
-        @Bean
-        public VectorStore vectorStore(DashScopeEmbeddingModel model) {
-            return SimpleVectorStore.builder(model).build();
-        }
-    }
-
     @Test
-    public void testRag(@Autowired VectorStore vectorStore,
-                        @Autowired DashScopeChatModel chatModel) {
-        final ChatClient chatClient = ChatClient.builder(chatModel)
-                .build();
+    public void testRerank(@Autowired VectorStore vectorStore,
+                           @Autowired DashScopeRerankModel dashScopeRerankModel,
+                           @Autowired DashScopeChatModel dashScopeChatModel) {
+        final ChatClient chatClient = ChatClient.builder(dashScopeChatModel).build();
+
+        // 粗排建议设置较大的topK(例如200),精排可以小一些(默认5)
+        final RetrievalRerankAdvisor rerankAdvisor = new RetrievalRerankAdvisor(
+                vectorStore,
+                dashScopeRerankModel,
+                SearchRequest.builder().topK(100).build()
+        );
 
         final String content = chatClient.prompt()
-                .user("代码run不起来怎么办?")
-                .advisors(new SimpleLoggerAdvisor(),
-                        QuestionAnswerAdvisor.builder(vectorStore)
-                                // 指定向量检索条件
-                                .searchRequest(SearchRequest.builder().topK(5).similarityThreshold(0.5).build())
-                                .build()
-                )
+                .user("怎么联系运维")
+                .advisors(rerankAdvisor)
                 .call()
                 .content();
-
-        System.out.println("content = " + content);
-    }
-
-    @Test
-    public void testRagRetrievalAugmentationAdvisor(@Autowired VectorStore vectorStore, @Autowired DashScopeChatModel chatModel) {
-        final ChatClient chatClient = ChatClient.builder(chatModel)
-                .defaultAdvisors(SimpleLoggerAdvisor.builder().build())
-                .build();
-
-        final RetrievalAugmentationAdvisor retrievalAugmentationAdvisor = RetrievalAugmentationAdvisor.builder()
-                // 文档查询条件, 类似于QuestionAnswerAdvisor.附加功能是如果查询不到文档,会使用内置提示词要求LLM礼貌告知用户`查询位于知识库外,无法回答`
-                .documentRetriever(VectorStoreDocumentRetriever.builder()
-                                .similarityThreshold(0.0)
-                                .topK(5)
-//                        .filterExpression()
-                                .vectorStore(vectorStore)
-                                .build()
-                )
-                // 检索结果为空时,allowEmptyContext设置为false,返回错误提示,设置为true时正常调用大模型回答问题.
-                .queryAugmenter(ContextualQueryAugmenter.builder()
-                        .allowEmptyContext(false)
-                        // 可以通过这个设置替换当查询不到文档时发送给大模型的提示词,默认是一段要求LLM礼貌告知用户`查询位于知识库外,无法回答`的英文
-                        .emptyContextPromptTemplate(PromptTemplate.builder().template("用户查询位于知识库外. 礼貌的告知用户你无法回答").build())
-                        .build()
-                )
-                // 查询转换器
-                // 重写检索查询转换器: 会首先将用户的原始提示词发送给LLM,让LLM提取和`targetSearchSystem`相关的问题,重新生成用户提示词
-                .queryTransformers(RewriteQueryTransformer.builder()
-                        .chatClientBuilder(ChatClient.builder(chatModel))
-                        .targetSearchSystem("新人入职助手")
-                        .build())
-                // 翻译转换器: 将用户的原始提示词转换为`targetLanguage`的新提示词
-                .queryTransformers(TranslationQueryTransformer.builder()
-                        .chatClientBuilder(ChatClient.builder(chatModel))
-                        .targetLanguage("简体中文")
-                        .targetLanguage("english")
-                        .build())
-                // 检索文档后置处理器
-                .documentPostProcessors(((query, documents) -> {
-                    System.out.println("原始查询: " + query.text());
-                    System.out.println("检索到的文档: " + documents.size());
-                    return documents;
-                }))
-                .build();
-
-        final String answer = chatClient.prompt()
-                .advisors(retrievalAugmentationAdvisor)
-                .user("第一天入职好开心,领导同事都很友善,就是不知道要做点啥好.")
-                .call()
-                .content();
-        System.out.println("answer = " + answer);
+        System.out.println(content);
     }
 
     private List<Document> getDocuments() {
-
         final String text = """
                 Java 程序员入职实操手册
                 一、入职基础认知
@@ -195,7 +135,7 @@ public class ChatClientRagTest {
                 资源库：
                 技术文档：Confluence “开发知识库”（含规范手册、故障案例）。
                 培训视频：企业大学 “Java 开发系列课程”（地址：http://edu.company.com/java）。
-                运维支持：IT 运维组电话 400-XXX-XXXX，工作时间 10 分钟内响应。
+                运维支持：IT 运维组电话 400-888-8888，工作时间 10 分钟内响应。
                 六、成长与发展
                 技术提升：每月组织 2 次技术分享会，可主动报名分享技术心得；鼓励参与开源项目或技术社区交流（如 Java 社区、Spring 社区）。
                 晋升路径：初级开发→中级开发→高级开发→技术专家 / 架构师，每年 4 月、10 月开展晋升评审，评审依据包括技术能力、项目贡献、团队协作等。
@@ -206,7 +146,6 @@ public class ChatClientRagTest {
                 .map(e -> Document.builder().text(e).build())
                 .toList();
     }
-
 
     /**
      * 将字符串按固定位数切分
