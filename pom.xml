@@ -23,6 +23,8 @@
         <module>spring-ai</module>
         <module>langchain4j</module>
         <module>common</module>
+        <module>spring-ai/actuator</module>
+        <module>spring-ai/agent</module>
     </modules>
 
     <dependencyManagement>

@@ -1,0 +1,14 @@
+spring:
+  ai:
+    dashscope:
+      api-key: ${ALI_AI_KEY}
+      chat:
+        options:
+          model: qwen-plus
+
+logging:
+  level:
+    org.springframework.ai: debug
+    io.modelcontextprotocol:
+      client: debug
+      spec: debug

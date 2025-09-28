@@ -1,0 +1,16 @@
+# Spring AI 可观测性配置
+# http://127.0.0.1:8080/actuator/metrics/gen_ai.client.operation
+# http://127.0.0.1:8080/actuator/metrics/gen_ai.client.token.usage
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+spring:
+  ai:
+    deepseek:
+      api-key: ${DEEP_SEEK_KEY}
